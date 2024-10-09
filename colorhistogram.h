@@ -12,7 +12,7 @@ class ColorHistogram : public QWidget
     QVector<QPixmap> pixmapSlices;
 
     QLabel *histLabel;
-    QComboBox *thresholder;
+    QSlider *thresholder;
     QSlider *colorValSlider;
     QComboBox *colorSelector;
 

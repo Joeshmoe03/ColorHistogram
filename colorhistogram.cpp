@@ -52,10 +52,11 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     histLayout->addWidget(colorLabel);
 
     // Threshold widget for frequency based pixel intensity
-    thresholder = new QComboBox;
-    QStringList thresholdOptions = {"1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192"};
-    thresholder->addItems(thresholdOptions);
-    connect(thresholder, &QComboBox::currentIndexChanged, this, &ColorHistogram::generateSlices);
+    thresholder = new QSlider;
+    thresholder->setRange(0, 255);
+    thresholder->setOrientation(Qt::Horizontal);
+    thresholder->setValue(255);
+    connect(thresholder, &QSlider::sliderReleased, this, &ColorHistogram::generateSlices);
 
     // our dropdown box for slice selection
     colorSelector = new QComboBox;
@@ -118,16 +119,14 @@ void ColorHistogram::showSlice(int colorVal) {
 void ColorHistogram::generateSlices() {
     // get current slice index 0, 1, 2 = R, G, B
     int sliceIdx = colorSelector->currentIndex();
-    qDebug() << "Generating slices for color index: " << sliceIdx;
 
     // Given dimensions of pixmap and other color vars for populating pixmap
     // Indexing of hist is by BBBBBBBB GGGGGGGG RRRRRRRR (bits)
     int width = 256; int height = 256;
     int red; int green; int blue;
-    int threshold = pow(2, thresholder->currentIndex());
+    int threshold = thresholder->sliderPosition();
     int colorIdx;
     int colorFreq;
-    QColor color;
 
     // Iteratr thru all 255 pixmaps based on color value for given color slice R, G, or B
     for (int colorVal = 0; colorVal < 256; ++colorVal) {
@@ -143,24 +142,29 @@ void ColorHistogram::generateSlices() {
             for (int y = 0; y < height; ++y) {
 
                 // ComboBox idx is set to 0 AKA "red"
-                if (sliceIdx == 0) {
+                switch(sliceIdx) {
+                case 0:
                     red = colorVal; // we are iterating over red's colorVal when genr. pixmaps of "red"
                     green = y; // green will be along y axis when displayed histogram set on "red" ComboBox
                     blue = x; // blue will be along x axis when displayed histogram set on "red" ComboBox
-                }
+                    break;
 
                 // ComboBox idx is set to 1 AKA "green"
-                else if (sliceIdx == 1) {
+                case 1:
                     red = x;
                     green = colorVal;
                     blue = y;
-                }
+                    break;
 
                 // ComboBox idx is set to 2 AKA "blue"
-                else if (sliceIdx == 2) {
+                case 2:
                     red = x;
                     green = y;
                     blue = colorVal;
+                    break;
+
+                default:
+                    return;
                 }
 
                 // Indexing of hist (frequencies colors) happens like so: BBBBBBBB GGGGGGGG RRRRRRRR (bits in 24 bit).
@@ -168,22 +172,17 @@ void ColorHistogram::generateSlices() {
                 colorIdx = (blue << 16) | (green << 8) | red;
                 colorFreq = hist[colorIdx];
 
-                // Set color according to freq as it appears in photo black or white or in between threshold
-                if (colorFreq < threshold) {
-                    float intensity = 1 - ((threshold - colorFreq) / threshold);
+                // Set color according to freq as it appears in photo black or white or in between
+                int intensity = colorFreq * threshold;
 
-                    // https://stackoverflow.com/questions/9323903/most-efficient-elegant-way-to-clip-a-number
-                    intensity = std::clamp(intensity, 0.0f, 1.0f);
-                    int pixelIntensity = (int)(intensity * 255);
-                    color = QColor(pixelIntensity, pixelIntensity, pixelIntensity);
-                } else {
-                    color = Qt::white;
-                }
-                tempImg.setPixelColor(x, y, color);
+                // https://stackoverflow.com/questions/9323903/most-efficient-elegant-way-to-clip-a-number
+                intensity = std::clamp(intensity, 0, 255);
+                tempImg.setPixelColor(x, y, qRgb(intensity, intensity, intensity));
             }
         }
-
         // Change original pixmap in corresponding pixmapSlices with populated pixmap
         slicePixmap = QPixmap::fromImage(tempImg);
     }
+    // Display current slice on new regeneration or for first time
+    showSlice(colorValSlider->sliderPosition());
 }

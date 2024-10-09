@@ -43,7 +43,6 @@ void MainWindow::openFileSlot(){
     dir = QFileInfo(fName).absolutePath();
 
     // Set up our image viewer
-    delete colorHistogram;
     colorHistogram = new ColorHistogram(image);
     connect(colorHistogram, &ColorHistogram::mouseMoved, this, &MainWindow::mouseMoved);
     setCentralWidget(colorHistogram);
