@@ -4,9 +4,9 @@
 
 HistViewer::HistViewer(QPixmap &_pixmap) : pixmap(_pixmap) {
     setScene(&scene);
-    giPixmap = scene.addPixmap(QPixmap::fromImage(image));
+    giPixmap = scene.addPixmap(pixmap);
 
-    setSceneRect(QRectF(QPointF(0,0), image.size()));
+    setSceneRect(QRectF(QPointF(0,0), pixmap.size()));
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     setMouseTracking(true);
 }

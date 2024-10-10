@@ -10,7 +10,6 @@ class HistViewer : public QGraphicsView {
     QGraphicsScene scene;
     QGraphicsPixmapItem *giPixmap;
     QPixmap pixmap;
-    QImage image;
 
 public:
     HistViewer(QPixmap &_pixmap);
