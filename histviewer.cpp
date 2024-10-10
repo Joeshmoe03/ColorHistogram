@@ -11,7 +11,7 @@ HistViewer::HistViewer(QPixmap &_pixmap) : pixmap(_pixmap) {
     setMouseTracking(true);
 }
 
-/* React to mouse movement event for the ImageViewer */
+/* React to mouse movement event for the histViewer */
 void HistViewer::mouseMoveEvent(QMouseEvent *evt) {
     QPoint pos = (giPixmap->mapFromScene(mapToScene(evt->pos()))-QPointF(0.5, 0.5)).toPoint();
     QImage pixmapImg = pixmap.toImage();
@@ -21,7 +21,7 @@ void HistViewer::mouseMoveEvent(QMouseEvent *evt) {
 }
 
 /* Updatre the histogram */
-void HistViewer::updateHistogram(const QPixmap &newHistogram) {
+void HistViewer::updateHistogram(QPixmap &newHistogram) {
     giPixmap->setPixmap(newHistogram);
 }
 

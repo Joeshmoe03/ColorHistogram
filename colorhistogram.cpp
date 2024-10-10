@@ -76,8 +76,7 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     connect(colorSelector, &QComboBox::currentIndexChanged, this, &ColorHistogram::generateSlices); // Slices should oonly be changed afterwards by manual changes to QComboBox
     histLayout->addWidget(colorSelector);
 
-    // Threshold label
-    // Thresholding widget for adjusting pixel color intensity at bottom of all widgets
+    // Thresholding widget for adjusting pixel color intensity at bottom of all widgets + label
     QLabel *thresholderLabel = new QLabel;
     thresholderLabel->setText("Threshold: ");
     histLayout->addWidget(thresholderLabel);
@@ -92,16 +91,14 @@ void ColorHistogram::CountColors() {
     // Reset histogram frequency on new image
     hist.assign(1 << 24, 0);
 
-    // Color variables
+    // Color variables and img properties stuff
     QRgb pixelColor;
     int red; int green; int blue;
     int colorIdx;
-
-    // Image dimensions
     int width = image.width();
     int height = image.height();
 
-    // iterate thru image and track with histFreq the possible 24-bit RGB colors of the image.
+    // iterate thru image and track with hist the freq.
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             pixelColor = image.pixel(x, y);
@@ -201,7 +198,7 @@ void ColorHistogram::mouseMoveView(QPoint pos, QColor color) {
 // HMMM... Tried to implement histviewer just like imageviewer but realized that while pos
 // info can be extracted from QPixmap, I still need current position of colorValSlider +
 // sliceIdx in colorhistogram.cpp to determine which color corresponds to what position and value.
-// Question for Professor: is there a more elegant way of doing this so I am not splitting
+// QUESTION FOR PROFESSOR: is there a more elegant way of doing this so I am not splitting
 // source of origin of the statusBar data to display (meaning pos comes from histViewer's signal, and
 // color info comes from this class when updating statusBar)? I am also not a fan of the switch I
 // use to get the right color. Alternative?
@@ -231,6 +228,5 @@ void ColorHistogram::mouseMoveHist(QPoint pos) {
         blue = colorVal;
         break;
     }
-    // Update statusBar
     statusBarHist->showMessage(QString("Position (%1,%2), Color (R,G,B) = (%3,%4,%5)").arg(pos.x()).arg(pos.y()).arg(red).arg(green).arg(blue));
 }

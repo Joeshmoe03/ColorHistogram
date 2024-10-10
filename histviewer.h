@@ -13,7 +13,7 @@ class HistViewer : public QGraphicsView {
 
 public:
     HistViewer(QPixmap &_pixmap);
-    void updateHistogram(const QPixmap &newHistogram);
+    void updateHistogram(QPixmap &newHistogram);
 
 protected:
     void mouseMoveEvent(QMouseEvent *evt) override;
