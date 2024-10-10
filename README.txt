@@ -1,4 +1,4 @@
-**APPROACH**:
+APPROACH:
 
   Main_Window___________________________________________________________
   ColorHistogram_widget_mainLayout_____________________________________|
@@ -14,7 +14,7 @@
   |__________________________|_________________________________________|
   |____________________________________________________________________|
 
-**CONSIDERATIONS/REFLECTIONS**:
+CONSIDERATIONS/REFLECTIONS:
 - Reconsider overall hierarchy with histViewer. While trying to emulate ImageViewer, I realized that histViewer signal would emit only position of mouse to histStatusBar and I would need to extract R,G,B for statusBar from colorHistgoram directly. I really don't like that I am splitting info between a signal + the parent class.
 - In future, find way of keeping the original QLabel pixmap of the histogram while also tracking mouse position like in ImageViewer
 - Avoid ugly switch cases (perhaps better way of handling of ColorHistogram::mouseMoveHist comes with first bullet point)
