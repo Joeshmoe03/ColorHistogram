@@ -44,10 +44,5 @@ void MainWindow::openFileSlot(){
 
     // Set up our image viewer
     colorHistogram = new ColorHistogram(image);
-    connect(colorHistogram, &ColorHistogram::mouseMoved, this, &MainWindow::mouseMoved);
     setCentralWidget(colorHistogram);
-}
-
-void MainWindow::mouseMoved(QPoint pos, QColor color) {
-    statusBar()->showMessage(QString("Position (%1,%2), Color (R,G,B) = (%3,%4,%5)").arg(pos.x()).arg(pos.y()).arg(color.red()).arg(color.green()).arg(color.blue()));
 }

@@ -1,5 +1,6 @@
 #include "colorhistogram.h"
 #include "imageviewer.h"
+#include "histviewer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,6 +13,9 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     QVBoxLayout *viewLayout = new QVBoxLayout;
     QVBoxLayout *histLayout = new QVBoxLayout;
 
+    statusBarView = new QStatusBar;
+    statusBarHist = new QStatusBar;
+
     // Add side padding to histLayout and force it to hug center of window
     histLayout->setContentsMargins(20, 0, 20, 0);
     histLayout->setAlignment(Qt::AlignCenter);
@@ -23,17 +27,22 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     // Add our imageViewer to the left hand side of the screen in our viewLayout
     ImageViewer *imageViewer = new ImageViewer(image);
     imageViewer->setMinimumSize(384, 256);
-    connect(imageViewer, &ImageViewer::mouseMoved, this, &ColorHistogram::mouseMoved);
+    connect(imageViewer, &ImageViewer::mouseMoved, this, &ColorHistogram::mouseMoveView);
     viewLayout->addWidget(imageViewer);
+    viewLayout->addWidget(statusBarView);
 
     // Add our ColorHistogram elements into the right hand side of screen (histLayout)
-    histLabel = new QLabel;
     QPixmap histPixmap(256, 256);
     histPixmap.fill(Qt::transparent);
-    histLabel->setPixmap(histPixmap);
-    histLabel->setFixedSize(256, 256);
-    histLayout->addWidget(histLabel);
-    CountColors(); // populate our color count vector before generating slices
+    histViewer = new HistViewer(histPixmap);
+    connect(histViewer, &HistViewer::mouseMoved, this, &ColorHistogram::mouseMoveHist);
+    histViewer->setMinimumSize(258, 258);
+    histViewer->updateHistogram(histPixmap);
+    histLayout->addWidget(histViewer);
+    histLayout->addWidget(statusBarHist);
+
+    // populate our color count vector before generating slices
+    CountColors();
 
     // Slider label
     QLabel *valueLabel = new QLabel;
@@ -43,6 +52,7 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     // Our color slider
     colorValSlider = new QSlider;
     colorValSlider->setOrientation(Qt::Horizontal);
+    colorValSlider->setMaximum(255);
     connect(colorValSlider, &QSlider::sliderMoved, this, &ColorHistogram::showSlice);
     histLayout->addWidget(colorValSlider);
 
@@ -111,7 +121,7 @@ void ColorHistogram::CountColors() {
 // Update the UI to show the slice based on the slider
 void ColorHistogram::showSlice(int colorVal) {
     if (colorVal >= 0 && colorVal < pixmapSlices.size()) {
-        histLabel->setPixmap(pixmapSlices[colorVal]);
+        histViewer->updateHistogram(pixmapSlices[colorVal]);
     }
 }
 
@@ -162,9 +172,6 @@ void ColorHistogram::generateSlices() {
                     green = y;
                     blue = colorVal;
                     break;
-
-                default:
-                    return;
                 }
 
                 // Indexing of hist (frequencies colors) happens like so: BBBBBBBB GGGGGGGG RRRRRRRR (bits in 24 bit).
@@ -185,4 +192,45 @@ void ColorHistogram::generateSlices() {
     }
     // Display current slice on new regeneration or for first time
     showSlice(colorValSlider->sliderPosition());
+}
+
+void ColorHistogram::mouseMoveView(QPoint pos, QColor color) {
+    statusBarView->showMessage(QString("Position (%1,%2), Color (R,G,B) = (%3,%4,%5)").arg(pos.x()).arg(pos.y()).arg(color.red()).arg(color.green()).arg(color.blue()));
+}
+
+// HMMM... Tried to implement histviewer just like imageviewer but realized that while pos
+// info can be extracted from QPixmap, I still need current position of colorValSlider +
+// sliceIdx in colorhistogram.cpp to determine which color corresponds to what position and value.
+// Question for Professor: is there a more elegant way of doing this so I am not splitting
+// source of origin of the statusBar data to display (meaning pos comes from histViewer's signal, and
+// color info comes from this class when updating statusBar)? I am also not a fan of the switch I
+// use to get the right color. Alternative?
+void ColorHistogram::mouseMoveHist(QPoint pos) {
+    int sliceIdx = colorSelector->currentIndex();
+    int colorVal = colorValSlider->sliderPosition();
+    int red; int green; int blue;
+
+    switch(sliceIdx) {
+    case 0:
+        red = colorVal; // we are iterating over red's colorVal when genr. pixmaps of "red"
+        green = pos.y(); // green will be along y axis when displayed histogram set on "red" ComboBox
+        blue = pos.x(); // blue will be along x axis when displayed histogram set on "red" ComboBox
+        break;
+
+        // ComboBox idx is set to 1 AKA "green"
+    case 1:
+        red = pos.x();
+        green = colorVal;
+        blue = pos.y();
+        break;
+
+        // ComboBox idx is set to 2 AKA "blue"
+    case 2:
+        red = pos.x();
+        green = pos.y();
+        blue = colorVal;
+        break;
+    }
+    // Update statusBar
+    statusBarHist->showMessage(QString("Position (%1,%2), Color (R,G,B) = (%3,%4,%5)").arg(pos.x()).arg(pos.y()).arg(red).arg(green).arg(blue));
 }

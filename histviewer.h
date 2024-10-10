@@ -1,0 +1,26 @@
+#ifndef HISTVIEWER_H
+#define HISTVIEWER_H
+
+#include <QGraphicsView>
+
+class HistViewer : public QGraphicsView {
+
+    Q_OBJECT
+
+    QGraphicsScene scene;
+    QGraphicsPixmapItem *giPixmap;
+    QPixmap pixmap;
+    QImage image;
+
+public:
+    HistViewer(QPixmap &_pixmap);
+    void updateHistogram(const QPixmap &newHistogram);
+
+protected:
+    void mouseMoveEvent(QMouseEvent *evt) override;
+
+signals:
+    void mouseMoved(QPoint pos);
+};
+
+#endif // HISTVIEWER_H

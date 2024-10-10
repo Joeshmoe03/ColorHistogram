@@ -10,12 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     colorhistogram.cpp \
+    histviewer.cpp \
     imageviewer.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     colorhistogram.h \
+    histviewer.h \
     imageviewer.h \
     mainwindow.h
 

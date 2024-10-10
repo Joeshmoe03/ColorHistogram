@@ -18,6 +18,5 @@ public:
 
 public slots:
     void openFileSlot();
-    void mouseMoved(QPoint pos, QColor color);
 };
 #endif // MAINWINDOW_H
