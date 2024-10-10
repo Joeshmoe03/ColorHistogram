@@ -8,7 +8,7 @@
 
 ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24, 0), pixmapSlices(256) {
 
-    // Set up layouts for ColorHistogram widget
+    // Set up layouts for ColorHistogram widget -> horizontal mainLayout([vert. viewLayout | vert. histLayout])
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     QVBoxLayout *viewLayout = new QVBoxLayout;
     QVBoxLayout *histLayout = new QVBoxLayout;
@@ -41,7 +41,7 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     histLayout->addWidget(histViewer);
     histLayout->addWidget(statusBarHist);
 
-    // populate our color count vector before generating slices
+    // populate hist of freq before generating slices
     CountColors();
 
     // Slider label
@@ -66,14 +66,14 @@ ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24
     thresholder->setRange(0, 255);
     thresholder->setOrientation(Qt::Horizontal);
     thresholder->setValue(255);
-    connect(thresholder, &QSlider::sliderReleased, this, &ColorHistogram::generateSlices);
+    connect(thresholder, &QSlider::sliderReleased, this, &ColorHistogram::generateSlices); // Slices should oonly be changed afterwards by manual changes to QComboBox r threshold
 
     // our dropdown box for slice selection
     colorSelector = new QComboBox;
     QStringList colorOptions = {"Red", "Green", "Blue"};
     colorSelector->addItems(colorOptions);
     generateSlices(); // Generate slices on the first time as we default to first colorOption (red) on startup
-    connect(colorSelector, &QComboBox::currentIndexChanged, this, &ColorHistogram::generateSlices); // Slices should oonly be changed afterwards by manual changes to QComboBox
+    connect(colorSelector, &QComboBox::currentIndexChanged, this, &ColorHistogram::generateSlices); // Slices should oonly be changed afterwards by manual changes to QComboBox r threshold
     histLayout->addWidget(colorSelector);
 
     // Thresholding widget for adjusting pixel color intensity at bottom of all widgets + label
@@ -109,6 +109,7 @@ void ColorHistogram::CountColors() {
             blue = qBlue(pixelColor);
 
             // bit shift where we have BBBBBBBB GGGGGGGG RRRRRRRR for our 24 bit index for our frequency array. Increment the array at corresponding color.
+            // NOTE: Perhaps use qRgb(...) && 0xFFFF... as discussed the other day (in the future) instead of manual bit shifts...
             colorIdx = (blue << 16) | (green << 8) | red;
             ++hist[colorIdx];
         }
@@ -172,19 +173,20 @@ void ColorHistogram::generateSlices() {
                 }
 
                 // Indexing of hist (frequencies colors) happens like so: BBBBBBBB GGGGGGGG RRRRRRRR (bits in 24 bit).
+                // NOTE: Perhaps use qRgb(...) && 0xFFFF... as discussed the other day (in the future) instead of manual bit shifts...
                 // We want to get freq for given x, y, and colorVal from slider by the index.
                 colorIdx = (blue << 16) | (green << 8) | red;
                 colorFreq = hist[colorIdx];
 
-                // Set color according to freq as it appears in photo black or white or in between
+                // Set color according to freq as it appears in photo black or white or in between.
+                // Thanks to Professor for clarifying thresholding procedure (was previously attempting weird frequency normalization w/ grayscaling).
                 int intensity = colorFreq * threshold;
 
-                // https://stackoverflow.com/questions/9323903/most-efficient-elegant-way-to-clip-a-number
+                // How to clamp? https://stackoverflow.com/questions/9323903/most-efficient-elegant-way-to-clip-a-number
                 intensity = std::clamp(intensity, 0, 255);
                 tempImg.setPixelColor(x, y, qRgb(intensity, intensity, intensity));
             }
         }
-        // Change original pixmap in corresponding pixmapSlices with populated pixmap
         slicePixmap = QPixmap::fromImage(tempImg);
     }
     // Display current slice on new regeneration or for first time
@@ -209,19 +211,19 @@ void ColorHistogram::mouseMoveHist(QPoint pos) {
 
     switch(sliceIdx) {
     case 0:
-        red = colorVal; // we are iterating over red's colorVal when genr. pixmaps of "red"
+        red = colorVal; // current selected colorVal on slider when "red" on ComboBox
         green = pos.y(); // green will be along y axis when displayed histogram set on "red" ComboBox
         blue = pos.x(); // blue will be along x axis when displayed histogram set on "red" ComboBox
         break;
 
-        // ComboBox idx is set to 1 AKA "green"
+    // ComboBox idx is set to 1 AKA "green"
     case 1:
         red = pos.x();
         green = colorVal;
         blue = pos.y();
         break;
 
-        // ComboBox idx is set to 2 AKA "blue"
+    // ComboBox idx is set to 2 AKA "blue"
     case 2:
         red = pos.x();
         green = pos.y();
