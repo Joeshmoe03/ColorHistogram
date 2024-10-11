@@ -6,6 +6,7 @@
 #include <cmath>
 #include <QtWidgets>
 
+/* ColorHistogram class containing ImageVewer and HistViewer widgets */
 ColorHistogram::ColorHistogram(const QImage &_image):image(_image), hist(1 << 24, 0), pixmapSlices(256) {
 
     // Set up layouts for ColorHistogram widget -> horizontal mainLayout([vert. viewLayout | vert. histLayout])
@@ -145,9 +146,9 @@ void ColorHistogram::generateSlices() {
                 // ComboBox idx is set to 0 AKA "red"
                 switch(sliceIdx) {
                 case 0:
-                    red = colorVal; // we are iterating over red's colorVal when genr. pixmaps of "red"
-                    green = y; // green will be along y axis when displayed histogram set on "red" ComboBox
-                    blue = x; // blue will be along x axis when displayed histogram set on "red" ComboBox
+                    red = colorVal;
+                    green = y;
+                    blue = x;
                     break;
 
                 // ComboBox idx is set to 1 AKA "green"
@@ -204,9 +205,9 @@ void ColorHistogram::mouseMoveHist(QPoint pos) {
 
     switch(sliceIdx) {
     case 0:
-        red = colorVal; // current selected colorVal on slider when "red" on ComboBox
-        green = pos.y(); // green will be along y axis when displayed histogram set on "red" ComboBox
-        blue = pos.x(); // blue will be along x axis when displayed histogram set on "red" ComboBox
+        red = colorVal;
+        green = pos.y();
+        blue = pos.x();
         break;
 
     // ComboBox idx is set to 1 AKA "green"
