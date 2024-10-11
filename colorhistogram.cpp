@@ -87,8 +87,6 @@ ColorHistogram::~ColorHistogram() {}
 
 // Populate hist, which is vector tracking color frequencies
 void ColorHistogram::CountColors() {
-
-    // Color variables and img properties stuff
     QRgb pixelColor;
     int red; int green; int blue;
     int colorIdx;
@@ -99,8 +97,6 @@ void ColorHistogram::CountColors() {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             pixelColor = image.pixel(x, y);
-
-            // individual colors of RGB
             red = qRed(pixelColor);
             green = qGreen(pixelColor);
             blue = qBlue(pixelColor);
