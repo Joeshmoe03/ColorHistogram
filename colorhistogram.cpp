@@ -88,9 +88,6 @@ ColorHistogram::~ColorHistogram() {}
 // Populate hist, which is vector tracking color frequencies
 void ColorHistogram::CountColors() {
 
-    // Reset histogram frequency on new image
-    hist.assign(1 << 24, 0);
-
     // Color variables and img properties stuff
     QRgb pixelColor;
     int red; int green; int blue;
